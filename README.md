@@ -24,13 +24,13 @@ Online Exam System is a Django-based web application to conduct online exams.
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/krishnateja-81/QUIZ-APP
+https://github.com/thedinaiym/Online-Exam-System.git
 ```
 
 2. Navigate to the project directory:
 
 ```bash
-cd online-exam-system
+ls
 ```
 
 3. Install the required dependencies:

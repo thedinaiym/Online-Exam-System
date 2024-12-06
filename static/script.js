@@ -3,7 +3,7 @@
         var count = 0
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === "hidden") {
-              count+=1;
+              count+=10;
               if (count === 1){
                 window.alert("if you change the tab again...you will get blocked from this site")
               }
