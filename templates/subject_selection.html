@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Select Subject{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Select Subject for Exam</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <select name="subject" class="form-control" required>
+                    <option value="">Choose a Subject</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}">{{ subject.name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="text-center mt-3">
+                    <button type="submit" class="btn btn-primary">Start Exam</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

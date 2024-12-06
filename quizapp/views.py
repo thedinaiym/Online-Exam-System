@@ -79,37 +79,68 @@ def user_logout(request):
 @login_required
 def home(request):
     user = request.user
-    score = models.leaderboard.objects.filter(username=user)
-    if score.exists():
-        return HttpResponse("your exam is completed")
-    else:
-        count=0
-        questions = models.question.objects.all()
+    
+    if request.method == 'GET':
+        # Get all subjects
+        subjects = models.Subject.objects.all()
+        return render(request, 'subject_selection.html', {'subjects': subjects})
+    
+    if request.method == 'POST':
+        subject_id = request.POST.get('subject')
+        
+        # Check if user has already taken exam for this subject
+        existing_score = models.leaderboard.objects.filter(
+            username=user.username, 
+            subject_id=subject_id
+        ).exists()
+        
+        if existing_score:
+            return HttpResponse("You have already completed this subject's exam")
+        
+        # Get questions for the selected subject
+        questions = models.question.objects.filter(subject_id=subject_id)
+        
+        # Randomly select 4 questions
         l = [i for i in range(1, 5)]
         random.shuffle(l)
+        
         context = {
             'questions': questions,
             'range': range(len(questions)),
-            'l': l
+            'l': l,
+            'subject_id': subject_id
         }
-
-
-        if request.method == 'POST':
-            for i in l:
-                selected_option = request.POST.get(f'question_{i}')
-                correct_options = models.question.objects.filter(qno=i).values_list('co', flat=True)
-
-                if selected_option in correct_options:
-                    count+=1
-                else:
-                    pass
-            scrobj = models.leaderboard.objects.create(
-                    username=user.username,
-                    score=count
-                )
-            return HttpResponse("your exam is completed")
-
+        
         return render(request, 'home.html', context)
+
+@login_required
+def submit_exam(request):
+    if request.method == 'POST':
+        user = request.user
+        subject_id = request.POST.get('subject_id')
+        count = 0
+        
+        # Get all questions for the subject
+        questions = models.question.objects.filter(subject_id=subject_id)
+        
+        # Create a list of question numbers
+        l = [i for i in range(1, 5)]
+        
+        for i in l:
+            selected_option = request.POST.get(f'question_{i}')
+            correct_options = questions.filter(qno=i).values_list('co', flat=True)
+            
+            if selected_option in correct_options:
+                count += 1
+        
+        # Create leaderboard entry
+        scrobj = models.leaderboard.objects.create(
+            username=user.username,
+            subject_id=subject_id,
+            score=count
+        )
+        
+        return HttpResponse("Your exam is completed")
     
     
 @login_required
