@@ -181,6 +181,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Your Name - your.email@example.com
+Your Name - dinaiym.dubanaeva@alatoo.edu.kg
 
 Project Link: [https://github.com/thedinaiym/Online-Exam-System.git]
