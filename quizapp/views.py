@@ -6,20 +6,18 @@ from django.contrib.auth.decorators import login_required
 import random
 from . import models
 
-users = User.objects.all()
 def user_login(request):
     dic = {}
     if request.method == "POST":
         uname = request.POST['uname'].upper()
         password = request.POST['password']
-        user = authenticate(username = uname, password = password )
-        if models.fraud_model.objects.filter(username=uname).exists():
+        user = authenticate(username=uname, password=password)
+        if models.FraudModel.objects.filter(user__username=uname).exists():
             return redirect('fraud')
         else:
-            if user is not None :
+            if user is not None:
                 login(request, user)
                 return redirect('home')
-
             else:
                 dic['warning'] = "Fake Login credentials"
     return render(request, "login.html", dic)
@@ -55,8 +53,7 @@ def register(request):
         elif pass1 != pass2:
             values['fname'] = fname
             values['uname'] = uname
-            values['passerr'] = "password and confirm password doesn't match"
-
+            values['passerr'] = "Password and confirm password don't match"
         else:
             userobj = User.objects.create_user(
                 username=uname,
@@ -65,49 +62,48 @@ def register(request):
                 email=email
             )
             userobj.save()
-            values["success"] = "Registration success"
-
+            # Автоматическое создание записи FraudModel при регистрации
+            models.FraudModel.objects.create(user=userobj)
+            values["success"] = "Registration successful"
             # return redirect('login')
     return render(request, "register.html", values)
-
 
 def user_logout(request):
     logout(request)
     return redirect('home')
-
 
 @login_required
 def home(request):
     user = request.user
     
     if request.method == 'GET':
-        # Get all subjects
         subjects = models.Subject.objects.all()
         return render(request, 'subject_selection.html', {'subjects': subjects})
     
     if request.method == 'POST':
         subject_id = request.POST.get('subject')
+        print(f"Selected subject_id: {subject_id}")  # Отладка
         
-        # Check if user has already taken exam for this subject
-        existing_score = models.leaderboard.objects.filter(
-            username=user.username, 
+        existing_score = models.Leaderboard.objects.filter(
+            user=user, 
             subject_id=subject_id
         ).exists()
         
         if existing_score:
             return HttpResponse("You have already completed this subject's exam")
         
-        # Get questions for the selected subject
-        questions = models.question.objects.filter(subject_id=subject_id)
+        # Получение вопросов для выбранного предмета
+        questions = models.Question.objects.filter(subject_id=subject_id)
+        print(f"Number of questions: {questions.count()}")  # Отладка
         
-        # Randomly select 4 questions
-        l = [i for i in range(1, 5)]
-        random.shuffle(l)
+        if not questions.exists():
+            return HttpResponse("No questions available for this subject")
+        
+        # Выбор 4 случайных вопросов
+        selected_questions = random.sample(list(questions), min(4, questions.count()))
         
         context = {
-            'questions': questions,
-            'range': range(len(questions)),
-            'l': l,
+            'questions': selected_questions,
             'subject_id': subject_id
         }
         
@@ -118,53 +114,59 @@ def submit_exam(request):
     if request.method == 'POST':
         user = request.user
         subject_id = request.POST.get('subject_id')
+        
+        # Check if the user has already taken the exam for this subject
+        existing_entry = models.Leaderboard.objects.filter(
+            user=user, 
+            subject_id=subject_id
+        ).first()
+        
+        if existing_entry:
+            return HttpResponse("You have already completed this subject's exam")
+        
+        # Rest of your existing code remains the same
         count = 0
         
-        # Get all questions for the subject
-        questions = models.question.objects.filter(subject_id=subject_id)
+        # Получение всех вопросов для предмета
+        questions = models.Question.objects.filter(subject_id=subject_id)
         
-        # Create a list of question numbers
-        l = [i for i in range(1, 5)]
+        # Создание списка номеров вопросов
+        qnos = [q.qno for q in questions]
         
-        for i in l:
-            selected_option = request.POST.get(f'question_{i}')
-            correct_options = questions.filter(qno=i).values_list('co', flat=True)
+        for qno in qnos:
+            selected_option = request.POST.get(f'question_{qno}')
+            correct_options = questions.filter(qno=qno).values_list('co', flat=True)
+            
+            print(f"Question {qno}: Selected option: {selected_option}, Correct option: {list(correct_options)}")  # Отладка
             
             if selected_option in correct_options:
                 count += 1
         
-        # Create leaderboard entry
-        scrobj = models.leaderboard.objects.create(
-            username=user.username,
+        # Создание записи в Leaderboard
+        scrobj = models.Leaderboard.objects.create(
+            user=user,
             subject_id=subject_id,
             score=count
         )
         
+        print(f"User {user.username} scored {count} in subject {subject_id}")  # Отладка
+        
         return HttpResponse("Your exam is completed")
-    
-    
 @login_required
-def leaderboard(request):
-
-    leaderboard_entries = models.leaderboard.objects.all().order_by('-score')[:10]
+def leaderboard_view(request):
+    leaderboard_entries = models.Leaderboard.objects.all().order_by('-score')[:10]
     return render(request, 'leaderboard.html', {'leaderboard_entries': leaderboard_entries})
-from django.shortcuts import render
-
-
-
 
 def fraud(request):
-    uname = request.user
-    if models.fraud_model.objects.filter(username=uname).exists():
-            return render(request, 'fraud.html')
-    elif uname is not None:
-        fraud_user = models.fraud_model.objects.create(
-            username = uname.username,
-            fraud = True
+    if request.user.is_authenticated and models.FraudModel.objects.filter(user=request.user).exists():
+        return render(request, 'fraud.html')
+    elif request.user.is_authenticated:
+        # Если пользователь аутентифицирован, но запись FraudModel отсутствует, создаём её
+        fraud_user = models.FraudModel.objects.create(
+            user=request.user,
+            fraud=True
         )
         fraud_user.save()
         logout(request)
         # return redirect('login')
     return render(request, 'fraud.html')
-
-

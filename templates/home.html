@@ -2,13 +2,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Ваши метатеги и стили -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Technical Quiz</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wDhfAdREpBCQKs2KkYYAdMZWLHg3Il/jhWZqIS6p8I5L2XUqSUkxgktELJ6mQQb1" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'style.css' %}">
 </head>
-<body onload="abcd()">
+<body>
     <div class="container">
         <h1>Technical Quiz</h1>
         <form method="post" action="{% url 'submit_exam' %}" id="exam-form">
@@ -17,34 +18,30 @@
             <input type="hidden" name="subject_id" value="{{ subject_id }}">
             
             {% if questions %}
-            {% for l in l %}
                 {% for question in questions %}
-                    {% if l == question.qno %}
-                        <div class="card p-4">
-                            <h2>-> {{ question.question }}</h2>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="question_{{ l }}" id="o1_{{ l }}" value="{{ question.o1 }}">
-                                <label class="form-check-label" for="o1_{{ l }}">{{ question.o1 }}</label>
-                            </div>
-                            
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="question_{{ l }}" id="o2_{{ l }}" value="{{ question.o2 }}">
-                                <label class="form-check-label" for="o2_{{ l }}">{{ question.o2 }}</label>
-                            </div>
-                            
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="question_{{ l }}" id="o3_{{ l }}" value="{{ question.o3 }}">
-                                <label class="form-check-label" for="o3_{{ l }}">{{ question.o3 }}</label>
-                            </div>
-                            
-                            <div class="form-check" style="padding-bottom: 1rem;">
-                                <input class="form-check-input" type="radio" name="question_{{ l }}" id="o4_{{ l }}" value="{{ question.o4 }}">
-                                <label class="form-check-label" for="o4_{{ l }}">{{ question.o4 }}</label>
-                            </div>
+                    <div class="card p-4 mb-3">
+                        <h2>-> {{ question.question }}</h2>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="question_{{ question.qno }}" id="o1_{{ question.qno }}" value="{{ question.o1 }}" required>
+                            <label class="form-check-label" for="o1_{{ question.qno }}">{{ question.o1 }}</label>
                         </div>
-                    {% endif %}
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="question_{{ question.qno }}" id="o2_{{ question.qno }}" value="{{ question.o2 }}" required>
+                            <label class="form-check-label" for="o2_{{ question.qno }}">{{ question.o2 }}</label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="question_{{ question.qno }}" id="o3_{{ question.qno }}" value="{{ question.o3 }}" required>
+                            <label class="form-check-label" for="o3_{{ question.qno }}">{{ question.o3 }}</label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="question_{{ question.qno }}" id="o4_{{ question.qno }}" value="{{ question.o4 }}" required>
+                            <label class="form-check-label" for="o4_{{ question.qno }}">{{ question.o4 }}</label>
+                        </div>
+                    </div>
                 {% endfor %}
-            {% endfor %}
             {% else %}
                 <p class="mt-4">No questions available.</p>
             {% endif %}
@@ -52,7 +49,7 @@
         </form>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-GLhlTQ8iKUr/ZLl6O3oVMWSktQOp6b7In1Zl3/Jr59taRG5R5FZnZQfaU8fN5WNp" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'script.js' %}"></script>
 </body>
 </html>

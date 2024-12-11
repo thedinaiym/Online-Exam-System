@@ -1,0 +1,19 @@
+select * from quizapp_leaderboard;
+
+select * from quizapp_subject;
+
+select * from quizapp_question;
+
+select * from quizapp_question q
+where q.subject_id = 1;
+
+SELECT *
+FROM quizapp_leaderboard l
+JOIN quizapp_question q ON l.subject_id = q.subject_id;
+
+SELECT * FROM auth_user;
+
+SELECT *
+FROM auth_user a
+JOIN quizapp_leaderboard q ON a.id = q.user_id;
+

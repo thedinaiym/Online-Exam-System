@@ -1,7 +1,9 @@
-from django.contrib import admin
-from . import models
+# quizapp/admin.py
 
-admin.site.register(models.question)
-admin.site.register(models.fraud_model)
-admin.site.register(models.leaderboard)
-admin.site.register(models.Subject)
+from django.contrib import admin
+from .models import Question, FraudModel, Leaderboard, Subject
+
+admin.site.register(Question)
+admin.site.register(FraudModel)
+admin.site.register(Leaderboard)
+admin.site.register(Subject)

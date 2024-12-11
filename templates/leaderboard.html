@@ -23,7 +23,7 @@
             {% for entry in leaderboard_entries %}
                 <tr>
                     <th scope="row">{{ forloop.counter }}</th>
-                    <td>{{ entry.username }}</td>
+                    <td>{{ entry.user.username }}</td>
                     <td>{{ entry.score }}</td>
                 </tr>
             {% endfor %}
@@ -37,3 +37,4 @@
 
 </body>
 </html>
+
